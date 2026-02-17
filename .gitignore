@@ -7,3 +7,4 @@ Makefile
 mkmf.log
 tmp/
 pkg/
+Gemfile.lock
