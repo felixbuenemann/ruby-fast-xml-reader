@@ -11,5 +11,6 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/felixbuenemann/fast_xml_reader'
   s.files       = Dir['lib/**/*.rb', 'ext/**/*.{c,rb}', 'README.md', 'LICENSE']
   s.extensions  = ['ext/fast_xml_reader/extconf.rb']
+  s.required_ruby_version = '>= 2.1'
   s.require_paths = ['lib']
 end
