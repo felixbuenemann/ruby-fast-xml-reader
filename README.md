@@ -1,5 +1,7 @@
 # FastXmlReader
 
+[![Test](https://github.com/felixbuenemann/ruby-fast-xml-reader/actions/workflows/test.yml/badge.svg)](https://github.com/felixbuenemann/ruby-fast-xml-reader/actions/workflows/test.yml)
+
 Fast, lightweight XML pull reader for Ruby. Uses mmap and zero-copy scanning with C-level name interning for high-performance XML processing.
 
 API compatible with Nokogiri::XML::Reader, but with no dependencies.
