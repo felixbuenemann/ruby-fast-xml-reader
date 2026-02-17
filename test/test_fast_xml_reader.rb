@@ -341,6 +341,23 @@ class TestFastXmlReader < Minitest::Test
     assert_equal FastXmlReader::TYPE_END_ELEMENT, nodes[5][:type]
   end
 
+  def test_file_io_matches_path_results
+    path = File.join(FIXTURE_DIR, 'sample.xml')
+    path_nodes = []
+    r = FastXmlReader.new(path)
+    r.each { |n| path_nodes << { name: n.name, type: n.node_type, depth: n.depth, value: n.value } }
+    r.close
+
+    io_nodes = []
+    File.open(path) do |f|
+      r = FastXmlReader.new(f)
+      r.each { |n| io_nodes << { name: n.name, type: n.node_type, depth: n.depth, value: n.value } }
+      r.close
+    end
+
+    assert_equal path_nodes, io_nodes
+  end
+
   def test_mmap_fixture_traversal
     path = File.join(FIXTURE_DIR, 'sample.xml')
     r = FastXmlReader.new(path)

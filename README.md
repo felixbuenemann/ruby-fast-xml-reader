@@ -45,7 +45,7 @@ end
 
 ### `FastXmlReader.new(path_or_io)`
 
-Creates a new reader. When given a file path (String), the file is memory-mapped for zero-copy access. When given an IO object, the content is read into a buffer.
+Creates a new reader. When given a file path (String), the file is memory-mapped for zero-copy access. When given an IO object with a file descriptor (e.g. `File`), the fd is memory-mapped for the same zero-copy performance. Other IO objects (e.g. `StringIO`) fall back to buffered reading.
 
 ### Node methods
 
@@ -69,7 +69,7 @@ Creates a new reader. When given a file path (String), the file is memory-mapped
 
 ## Features
 
-- **mmap** for file paths, buffered IO for streams
+- **mmap** for file paths and IO objects with file descriptors, buffered IO for streams
 - **Zero-copy scanning** — points directly into the mmap buffer
 - **Name interning** via FNV-1a hash table (512 entries) for fast string dedup
 - **XML entity decoding** — `&amp;` `&lt;` `&gt;` `&quot;` `&apos;` and numeric (`&#123;` `&#x1A;`)

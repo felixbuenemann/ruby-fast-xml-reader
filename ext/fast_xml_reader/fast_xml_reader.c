@@ -736,8 +736,33 @@ static VALUE reader_initialize(VALUE self, VALUE arg) {
         r->size = (size_t)st.st_size;
         r->is_mmap = 1;
     } else {
-        /* IO — read into malloc'd buffer */
-        reader_init_from_io(r, arg);
+        /* IO with fd — try mmap first */
+        int use_mmap = 0;
+
+        if (rb_respond_to(arg, rb_intern("fileno"))) {
+            VALUE vfd = rb_funcall(arg, rb_intern("fileno"), 0);
+            if (FIXNUM_P(vfd)) {
+                int fd = FIX2INT(vfd);
+                struct stat st;
+                if (fstat(fd, &st) == 0 && S_ISREG(st.st_mode) && st.st_size > 0) {
+                    off_t cur = lseek(fd, 0, SEEK_CUR);
+                    if (cur == 0) {
+                        void *map = mmap(NULL, (size_t)st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+                        if (map != MAP_FAILED) {
+                            madvise(map, (size_t)st.st_size, MADV_SEQUENTIAL);
+                            r->data = (const char *)map;
+                            r->size = (size_t)st.st_size;
+                            r->is_mmap = 1;
+                            use_mmap = 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!use_mmap) {
+            reader_init_from_io(r, arg);
+        }
     }
 
     return self;
