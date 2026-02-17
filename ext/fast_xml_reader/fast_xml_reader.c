@@ -450,10 +450,10 @@ static void parse_attrs(FastReader *r) {
 
         r->pos = val_end + 1; /* skip closing quote */
 
-        /* Skip namespace-prefixed attributes (xmlns:*) */
+        /* Skip namespace attributes (xmlns and xmlns:*) */
         size_t nlen = name_end - name_start;
-        if (nlen >= 6 && memcmp(r->data + name_start, "xmlns", 5) == 0 &&
-            (r->data[name_start + 5] == ':' || r->data[name_start + 5] == '=')) {
+        if (nlen >= 5 && memcmp(r->data + name_start, "xmlns", 5) == 0 &&
+            (nlen == 5 || r->data[name_start + 5] == ':')) {
             continue;
         }
 
