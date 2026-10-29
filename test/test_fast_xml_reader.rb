@@ -136,6 +136,23 @@ class TestFastXmlReader < Minitest::Test
     assert_equal 'main', r.attribute('class')
   end
 
+  def test_attribute_returns_frozen_deduplicated_value
+    r = reader_for('<item id="42"/><item id="42"/>')
+    r.read
+    first = r.attribute('id')
+    r.read
+    assert_equal '42', first
+    assert_predicate first, :frozen?
+    # Ruby < 3.0 has no rb_enc_interned_str, values are frozen copies there
+    assert_same first, r.attribute('id') if RUBY_VERSION >= '3.0'
+  end
+
+  def test_attribute_with_entity_is_frozen
+    r = reader_for('<a val="one &amp; two"/>')
+    r.read
+    assert_predicate r.attribute('val'), :frozen?
+  end
+
   def test_attribute_returns_nil_if_missing
     r = reader_for('<item id="42"/>')
     r.read

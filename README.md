@@ -55,7 +55,7 @@ Creates a new reader. When given a file path (String), the file is memory-mapped
 | `name` | Element name (namespace prefix stripped, frozen/interned) |
 | `depth` | Current tree depth |
 | `value` | Text content (with XML entity decoding) |
-| `attribute(name)` | Get attribute value by name |
+| `attribute(name)` | Get attribute value by name (frozen and deduplicated, repeated values such as ids or types don't allocate) |
 | `empty_element?` | True if self-closing (`<br/>`) or empty (`<br></br>`) |
 | `self_closing?` | Alias for `empty_element?` |
 

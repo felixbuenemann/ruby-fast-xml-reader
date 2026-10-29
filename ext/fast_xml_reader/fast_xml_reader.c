@@ -309,11 +309,20 @@ static VALUE decode_entities(FastReader *r, const char *src, size_t len) {
 /* ------------------------------------------------------------------ */
 /* Attribute value decode helper                                       */
 /* ------------------------------------------------------------------ */
+/* Frozen and deduplicated: a value that already exists as an interned string
+   is returned without allocating a new string. */
 static VALUE make_attr_value(FastReader *r, AttrEntry *a) {
+#ifdef HAVE_RB_ENC_INTERNED_STR
     if (a->val_has_entity) {
-        return decode_entities(r, a->val_ptr, a->val_len);
+        return rb_str_to_interned_str(decode_entities(r, a->val_ptr, a->val_len));
     }
-    return rb_enc_str_new(a->val_ptr, (long)a->val_len, r->utf8);
+    return rb_enc_interned_str(a->val_ptr, (long)a->val_len, r->utf8);
+#else
+    if (a->val_has_entity) {
+        return rb_str_freeze(decode_entities(r, a->val_ptr, a->val_len));
+    }
+    return rb_str_freeze(rb_enc_str_new(a->val_ptr, (long)a->val_len, r->utf8));
+#endif
 }
 
 /* ------------------------------------------------------------------ */
@@ -830,21 +839,26 @@ static VALUE reader_value(VALUE self) {
     return rb_enc_str_new(r->text_ptr, (long)r->text_len, r->utf8);
 }
 
-static VALUE reader_attribute(VALUE self, VALUE attr_name) {
-    FastReader *r;
-    TypedData_Get_Struct(self, FastReader, &reader_type, r);
-
+static AttrEntry *find_attr(FastReader *r, VALUE attr_name) {
     const char *needle = StringValuePtr(attr_name);
     long needle_len = RSTRING_LEN(attr_name);
 
     for (int i = 0; i < r->attr_count; i++) {
         AttrEntry *a = &r->attrs[i];
         if ((long)a->name_len == needle_len && memcmp(a->name_ptr, needle, (size_t)needle_len) == 0) {
-            return make_attr_value(r, a);
+            return a;
         }
     }
 
-    return Qnil;
+    return NULL;
+}
+
+static VALUE reader_attribute(VALUE self, VALUE attr_name) {
+    FastReader *r;
+    TypedData_Get_Struct(self, FastReader, &reader_type, r);
+
+    AttrEntry *a = find_attr(r, attr_name);
+    return a ? make_attr_value(r, a) : Qnil;
 }
 
 static VALUE reader_empty_element_p(VALUE self) {
