@@ -7,11 +7,16 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['2.1', '4.0']
+        include:
+          # setup-ruby has no Ruby 2.1 build for newer images than ubuntu-24.04
+          - ruby: '2.1'
+            os: ubuntu-24.04
+          - ruby: '4.0'
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
