@@ -6,4 +6,9 @@ gemspec
 
 gem 'minitest', '~> 5.0'
 gem 'rake'
-gem 'rake-compiler', '~> 1.0'
+# rake-compiler 1.3.2 uses syntax that needs Ruby 2.3, but still declares Ruby >= 1.8.7
+if RUBY_VERSION < '2.3'
+  gem 'rake-compiler', '~> 1.0', '< 1.3.2'
+else
+  gem 'rake-compiler', '~> 1.0'
+end
